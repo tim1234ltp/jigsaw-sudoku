@@ -22,10 +22,12 @@ main = do
     contents <- readFile "map2.txt"
     let allRows = lines contents
         mapRows = take (9) allRows
-        stateRows = drop (9) allRows
-        positions = map (\(y, row) -> getMapPositions y row stateRows) $ zip[0..] mapRows
+        originalStateRows = drop (9) allRows
+        positions = map (\(y, row) -> getMapPositions y row originalStateRows) $ zip[0..] mapRows
         sudokuMap = concat $ (drawMap positions)
+        currentStateRows = getCurrentStateRows positions
     putStrLn (unlines sudokuMap)
+    saveMapAndState "temp" mapRows currentStateRows
 
 drawMap :: [[(Int, Int, Char, Char)]] -> [[String]]
 drawMap coords = drawTopRow ++ (map (\row -> [drawZoneRow row coords, drawBarrierRow row coords]) coords)
@@ -56,4 +58,13 @@ getBarrierRow (x, y, zone, value) coords
 
 getMapPositions :: Int -> String -> [String] -> [(Int, Int, Char, Char)]
 getMapPositions y row states = map (\(x, zone) -> (x, y, zone, getSavedState x y states)) $ zip [0..] row
+
+getCurrentStateRows :: [[(Int, Int, Char, Char)]] -> [String]
+getCurrentStateRows positions = map (\row -> getStateRow row) positions
+
+getStateRow :: [(Int, Int, Char, Char)] -> String
+getStateRow row = map (\(x, y, zone, value) -> value) row
+
+saveMapAndState :: String -> [String] -> [String] -> IO ()
+saveMapAndState path mapRows originalStateRows = writeFile path (unlines $ mapRows ++ originalStateRows)
 
