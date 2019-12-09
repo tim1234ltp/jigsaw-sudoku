@@ -1,53 +1,59 @@
 import System.IO
 import Debug.Trace
+import Data.Char
 
 
---data MapPoint = MapPoint Int Int Int String deriving (Show)
---data MapSymbol = VerticalBarrier Coords | HorizontalBarrier Coords | EmptyArea Coords | Number Coords Int deriving (Show)
+trd :: (Int, Int, Char, Char) -> Char
+trd (x, y, zone, value) = zone
 
-trd :: (Int, Int, Char) -> Char
-trd (x, y, value) = value
+fth :: (Int, Int, Char, Char) -> Char
+fth (x, y, zone, value) = value
 
-getValue :: Int -> Int -> [[(Int, Int, Char)]] -> Char
+getZone :: Int -> Int -> [[(Int, Int, Char, Char)]] -> Char
+getZone x y coords = trd ((coords !! y) !! x)
+
+getValue:: Int -> Int -> [[(Int, Int, Char, Char)]] -> Char
 getValue x y coords = trd ((coords !! y) !! x)
 
+getSavedState :: Int -> Int -> [String] -> Char
+getSavedState x y states = ((states !! y) !! x)
 
 main = do 
-    contents <- readFile "map.txt"
+    contents <- readFile "map2.txt"
     let allRows = lines contents
-    let coords = map (\(y, row) -> getPoints y row) $ zip[0..] allRows
+        mapRows = take (9) allRows
+        stateRows = drop (9) allRows
+        positions = map (\(y, row) -> getMapPositions y row stateRows) $ zip[0..] mapRows
+        sudokuMap = concat $ (drawMap positions)
+    putStrLn (unlines sudokuMap)
 
-    let map = concat $ drawMap coords 
-    --print map
-    putStrLn (unlines map)
-
-drawMap :: [[(Int, Int, Char)]] -> [[String]]
-drawMap coords = drawTopRow ++ (map (\row -> [drawValueRow row coords, drawBarrierRow row coords]) coords)
+drawMap :: [[(Int, Int, Char, Char)]] -> [[String]]
+drawMap coords = drawTopRow ++ (map (\row -> [drawZoneRow row coords, drawBarrierRow row coords]) coords)
 
 drawTopRow :: [[String]]
 drawTopRow = [["|" ++ (replicate (9*5) '-') ++ "|"]]
 
-drawBarrierRow :: [(Int, Int, Char)] -> [[(Int, Int, Char)]] -> String
+drawBarrierRow :: [(Int, Int, Char, Char)] -> [[(Int, Int, Char, Char)]] -> String
 drawBarrierRow row coords = "|" ++ (concat $ map (\coord -> getBarrierRow coord coords) row) ++ "|"
 
-drawValueRow :: [(Int, Int, Char)] -> [[(Int, Int, Char)]] -> String
-drawValueRow row coords =  "|" ++ (concat $ (map (\coord -> getValueRow coord coords) row)) ++ "|"
+drawZoneRow :: [(Int, Int, Char, Char)] -> [[(Int, Int, Char, Char)]] -> String
+drawZoneRow row coords =  "|" ++ (concat $ (map (\coord -> getZoneRow coord coords) row)) ++ "|"
 
-getValueRow :: (Int, Int, Char) -> [[(Int, Int, Char)]] -> String
-getValueRow (x, y, value) coords
+getZoneRow :: (Int, Int, Char, Char) -> [[(Int, Int, Char, Char)]] -> String
+getZoneRow (x, y, zone, value) coords
   | x == 8 = "  " ++ [value] ++ "  "
-  | getValue (x + 1) y coords /= value = "  " ++ [value] ++ " |"
+  | getZone (x + 1) y coords /= zone = "  " ++ [value] ++ " |"
   | otherwise = "  " ++ [value] ++ "  "
 
-getBarrierRow :: (Int, Int, Char) -> [[(Int, Int, Char)]] -> String
-getBarrierRow (x, y, value) coords
+getBarrierRow :: (Int, Int, Char, Char) -> [[(Int, Int, Char, Char)]] -> String
+getBarrierRow (x, y, zone, value) coords
   | y == 8 = "-----"
-  | x == 8 && getValue x (y + 1) coords == value  = "     "
-  | x == 8 && getValue x (y + 1) coords /= value = "-----"
-  | getValue x (y + 1) coords /= value = "-----"
-  | getValue (x + 1) y coords /= value = "    |"
+  | x == 8 && getZone x (y + 1) coords == zone  = "     "
+  | x == 8 && getZone x (y + 1) coords /= zone = "-----"
+  | getZone x (y + 1) coords /= zone = "-----"
+  | getZone (x + 1) y coords /= zone = "    |"
   | otherwise = "     "
 
-getPoints :: Int -> String -> [(Int, Int, Char)]
-getPoints y row = map (\(x, num) -> (x, y, num)) $ zip [0..] row 
+getMapPositions :: Int -> String -> [String] -> [(Int, Int, Char, Char)]
+getMapPositions y row states = map (\(x, zone) -> (x, y, zone, getSavedState x y states)) $ zip [0..] row
 
