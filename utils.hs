@@ -1,22 +1,30 @@
 module Utils
-( trd
-, fth
+( getPosX
+, getPosY
+, getPosZone
+, getPosValue
 , getZone
 , getValue
 , getSavedState 
 ) where
 
-trd :: (Int, Int, Char, Char) -> Char
-trd (x, y, zone, value) = zone
+getPosY :: (Int, Int, Char, Char) -> Int
+getPosY (x, y, zone, value) = y
 
-fth :: (Int, Int, Char, Char) -> Char
-fth (x, y, zone, value) = value
+getPosX :: (Int, Int, Char, Char) -> Int
+getPosX (x, y, zone, value) = x
+
+getPosZone :: (Int, Int, Char, Char) -> Char
+getPosZone (x, y, zone, value) = zone
+
+getPosValue :: (Int, Int, Char, Char) -> Char
+getPosValue (x, y, zone, value) = value
 
 getZone :: Int -> Int -> [[(Int, Int, Char, Char)]] -> Char
-getZone x y coords = trd ((coords !! y) !! x)
+getZone x y coords = getPosZone ((coords !! y) !! x)
 
 getValue:: Int -> Int -> [[(Int, Int, Char, Char)]] -> Char
-getValue x y coords = trd ((coords !! y) !! x)
+getValue x y coords = getPosZone ((coords !! y) !! x)
 
 getSavedState :: Int -> Int -> [String] -> Char
 getSavedState x y states = ((states !! y) !! x)
