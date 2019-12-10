@@ -19,7 +19,7 @@ executeStartCommand cmd
 
 startSudokuGame :: String -> IO ()
 startSudokuGame cmd = do
-  fileContents <- readFile "map.txt"
+  fileContents <- readFile "map2.txt"
   let allRows = lines fileContents
       mapRows = take (9) allRows
       originalStateRows = drop (9) allRows
@@ -44,8 +44,11 @@ makeMove positions mapRows = do
           newSudokuMap = concat $ getDrawnSudokuMap newPositions
       if isMoveValid x y newValue newPositions
         then do
-          putStrLn (unlines newSudokuMap)
-          makeMove newPositions mapRows
+          if isGameOver newPositions
+            then putStrLn "Congratulations, you finished the game!"
+            else do
+              putStrLn (unlines newSudokuMap)
+              makeMove newPositions mapRows
         else do
           putStrLn "Move was NOT successful, check that the new entry is unique in its column, zone and row."
           makeMove positions mapRows

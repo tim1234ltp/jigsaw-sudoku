@@ -1,6 +1,7 @@
 module Play
 ( setSudokuState
 , isMoveValid
+, isGameOver
 ) where
 
 import Utils
@@ -33,3 +34,6 @@ isColumnValid val column =  (length (filter (\(x, y, zone, value) -> value == va
 
 isZoneValid :: Char -> [(Int, Int, Char, Char)] -> Bool
 isZoneValid val zone =  (length (filter (\(x, y, zone, value) -> value == val) zone)) < 2
+
+isGameOver :: [[(Int, Int, Char, Char)]] -> Bool
+isGameOver positions = (length (concat $ map (\row -> (filter (\(x, y, zone, value) -> value == '.') row)) positions)) == 0 
